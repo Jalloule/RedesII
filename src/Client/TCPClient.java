@@ -9,23 +9,27 @@ public class TCPClient {
     public static void run() throws Exception {
         //Port and adress to connect to the server
         int port = 6789;
-        String adress = "localhost";
+        
+        String address;
+        Scanner reader = new Scanner(System.in);  // Reading from System.in
+        System.out.println("Enter the host address: ");
+        address = reader.nextLine();
 
         String sentence;
         String modifiedSentence;
 
         System.out.println("Client is On");
-        System.out.println("Will sent to Port:" + port + " on: " + adress);
+        System.out.println("Will sent to Port:" + port + " on: " + address);
 
         while (true) {
             //Reader to read the user input
             System.out.println("Write message and press ENTER");
-            Scanner reader = new Scanner(System.in);
+            
             // Reading from users keyboars input
             String inFromUser = reader.nextLine();
             System.out.println("");
 
-            try (Socket clientSocket = new Socket(adress, port)) {
+            try (Socket clientSocket = new Socket(address, port)) {
                 //Creates stream to send message to server
                 DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
                 //BufferedReader to read servers answer
