@@ -30,12 +30,23 @@ public class TCPServer {
         // Reading from users keyboars input
         fileOutput = reader.nextLine();
         System.out.println("");
-        
+
         //Server loop, will wait for messages
-        System.out.println("\nWaiting to receive a file from the Client...");
+        System.out.println("\nWaiting to receive something from the Client...");
         while (true) {
             //Connection socket openned
             Socket connectionSocket = welcomeSocket.accept();
+
+            BufferedReader dataInFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            DataOutputStream dataOutToClient = new DataOutputStream(connectionSocket.getOutputStream());
+
+            String clientMessage = dataInFromClient.readLine();
+            System.out.println("Received" + " '" + clientMessage + "' " + "from client\n");
+
+            dataOutToClient.writeBytes("HiFromServer" + "\n");
+            System.out.println("Sent " + "HiFromServer\n");
+
+            //FILE RECEIVE           
             //Input stream to read the file
             is = connectionSocket.getInputStream();
             //Output stream to write the file
@@ -69,6 +80,7 @@ public class TCPServer {
                 }
             }
 
+            //FILE RECEIVE         
         }
     }
 }

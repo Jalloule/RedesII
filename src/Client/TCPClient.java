@@ -1,6 +1,7 @@
 package Client;
 
 import java.io.*;
+import static java.lang.Thread.sleep;
 import java.net.*;
 import java.util.Scanner;
 
@@ -32,43 +33,67 @@ public class TCPClient {
         try {//tries to connect to server
             //Creates stream to send message to server
             Socket clientSocket = new Socket(address, port);
-            outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
+
+            DataOutputStream dataOutToServer = new DataOutputStream(clientSocket.getOutputStream());
+            BufferedReader dataInFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+            dataOutToServer.writeBytes("HiFromClient" + "\n");
+            System.out.println("Sent " + "HiFromClient\n");
+            String serverResponse = dataInFromServer.readLine();
+            System.out.println("Received" + " '" + serverResponse + "' " + "from Server\n");
+
+//
+//            //FILE SEND
+            try {
+                //creates the buffered output stream to server
+                outToServer = new BufferedOutputStream(clientSocket.getOutputStream());
+                //if output stream to server is created with no error, send the file
+                if (outToServer != null) {
+                    sendFile(fileToSend, outToServer);
+                }
+            } catch (IOException ex) {
+                System.out.println("Could not create file output stream");
+            }
+//            //FILE SEND
 
         } catch (IOException ex) {
             System.out.println("Could not connect to server");
         }
-        if (outToServer != null) {
-            //Creates the file to send
-            File myFile = new File(fileToSend);
-            //byteArray to read the file to
-            byte[] mybytearray = new byte[(int) myFile.length()];
 
-            FileInputStream fis = null;
+    }
 
-            try {
-                fis = new FileInputStream(myFile);
-            } catch (FileNotFoundException ex) {
-                // Do exception handling
-            }
-            //Stream that will get the array to send to the server
-            BufferedInputStream bis = new BufferedInputStream(fis);
+    public static void sendFile(String fileToSend, BufferedOutputStream outToServer) {
 
-            try {
-                
-                bis.read(mybytearray, 0, mybytearray.length);
-                outToServer.write(mybytearray, 0, mybytearray.length);
-                //sends to server
-                outToServer.flush();
-                outToServer.close();
-                //clientSocket.close();
+        //Creates the file to send
+        File myFile = new File(fileToSend);
+        //byteArray to read the file to
+        byte[] mybytearray = new byte[(int) myFile.length()];
 
-                // File sent, exit the main method
-                System.out.println("\nFile " + fileToSend + " was sent successfully");
-                return;
-            } catch (IOException ex) {
-                System.out.println("Could not send the file");
-            }
+        FileInputStream fis = null;
+
+        try {
+            fis = new FileInputStream(myFile);
+        } catch (FileNotFoundException ex) {
+            System.out.println("Fail to create file input stream");
         }
-        
+        //Stream that will get the array to send to the server
+        BufferedInputStream bis = new BufferedInputStream(fis);
+
+        try {
+
+            bis.read(mybytearray, 0, mybytearray.length);
+            outToServer.write(mybytearray, 0, mybytearray.length);
+            //sends to server
+            outToServer.flush();
+            outToServer.close();
+            //clientSocket.close();
+
+            // File sent, exit the main method
+            System.out.println("\nFile " + fileToSend + " was sent successfully");
+            return;
+        } catch (IOException ex) {
+            System.out.println("Could not send the file");
+        }
+
     }
 }
