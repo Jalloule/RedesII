@@ -7,36 +7,38 @@ import java.util.Scanner;
 public class TCPServer {
 
     public static void run() throws Exception {
-        //Some variables
-        byte[] aByte = new byte[1];//array of bytes so put the input in
-        int bytesRead;
-        String fileOutput;//nameof the outFile
-        int port = 6789;//Port to open the server
 
-        InputStream is = null;
-
-        Scanner reader = new Scanner(System.in);
-
+//Opens and Prints Connection Info
+//------------------------------------------------------------------------------
+        int port = 6789;//Port to open the server      
         //Opens the socket
         ServerSocket welcomeSocket = new ServerSocket(6789);
         //Control messages
         System.out.println("Socked opened");
         System.out.println("Server is On");
         System.out.println("Listening on Port:" + port + "\n");
+//------------------------------------------------------------------------------        
 
+//Sets file to save info
+//------------------------------------------------------------------------------    
         //Reader to read the user input
         System.out.println("Write the name of the output file: ");
-
+        String fileOutput;//name of the outFile
         // Reading from users keyboars input
+        Scanner reader = new Scanner(System.in);
         fileOutput = reader.nextLine();
         System.out.println("");
-
+//------------------------------------------------------------------------------   
         //Server loop, will wait for messages
-        System.out.println("\nWaiting to receive something from the Client...");
+        System.out.println("\nWaiting to receive something from the Client...\n");
         while (true) {
-            //Connection socket openned
+//Creation of the socket
+//------------------------------------------------------------------------------
             Socket connectionSocket = welcomeSocket.accept();
+//------------------------------------------------------------------------------
 
+//Initial message interchange
+//------------------------------------------------------------------------------ 
             BufferedReader dataInFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             DataOutputStream dataOutToClient = new DataOutputStream(connectionSocket.getOutputStream());
 
@@ -45,12 +47,26 @@ public class TCPServer {
 
             dataOutToClient.writeBytes("HiFromServer" + "\n");
             System.out.println("Sent " + "HiFromServer\n");
+//------------------------------------------------------------------------------ 
 
-            //FILE RECEIVE           
+//Calls the send to file function
+//------------------------------------------------------------------------------     
+            receiveFile(fileOutput, connectionSocket);
+//------------------------------------------------------------------------------        
+        }
+    }
+
+    public static void receiveFile(String fileOutput, Socket connectionSocket) {
+
+        try {
             //Input stream to read the file
-            is = connectionSocket.getInputStream();
+            InputStream is = connectionSocket.getInputStream();
+
             //Output stream to write the file
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            byte[] aByte = new byte[1];//array of bytes so put the input in
+            int bytesRead;
 
             if (is != null) {
 
@@ -79,8 +95,9 @@ public class TCPServer {
                     System.out.println("Error in writing the file");
                 }
             }
-
-            //FILE RECEIVE         
+        } catch (IOException ex) {
+            System.out.println("Could not create input stream");
         }
+
     }
 }
