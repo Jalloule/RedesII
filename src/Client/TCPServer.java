@@ -1,6 +1,7 @@
 package Client;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.*;
 import java.util.Scanner;
 
@@ -8,11 +9,23 @@ public class TCPServer {
 
     //Public and Prvate keys and Algorithms classes
 //------------------------------------------------------------------------------
-    private static int myPrivateKey;
-    private static int myPublicKey;
-    private static int clientPublicKey;
+   private static int myPrivateKey = 29 ;
+    private static BigInteger mprk = BigInteger.valueOf(myPrivateKey);
+    private static int myPublicKey = 1625;
+    private static BigInteger mpuk = BigInteger.valueOf(myPublicKey);
+    private static int myN = 2881;
+    private static BigInteger mn= BigInteger.valueOf(myN);
+   
+    
+    private static int clientPublicKey = 1625 ;
+    private static BigInteger cpuk = BigInteger.valueOf(clientPublicKey);
+    private static int clientN  = 2881;
+    private static BigInteger cn= BigInteger.valueOf(clientN);
 
-    private static RSA rsa = new RSA();
+    private static RSA myRSA = new RSA(mprk,mpuk,mn);
+    private static RSA otherRSA = new RSA(cpuk,cn);
+
+
 
 //------------------------------------------------------------------------------
     public static void run() throws Exception {
@@ -98,8 +111,11 @@ public class TCPServer {
 //------------------------------------------------------------------------------              
                     //the array received
                     byte[] receivedByteArray = baos.toByteArray();
-                    byte[] decriptedByteArray = rsa.decriptByteArray(receivedByteArray, myPrivateKey);
-
+                    System.out.println("byteArray before decription:");
+                    System.out.println(bytesToString(receivedByteArray));
+                    byte[] decriptedByteArray = otherRSA.decriptByteArray(receivedByteArray);
+                    System.out.println("byteArray after decription:");
+                    System.out.println(bytesToString(decriptedByteArray));
 //part to split what was received
 
 
@@ -122,4 +138,11 @@ public class TCPServer {
         }
 
     }
+       private static String bytesToString(byte[] e) {
+        String test = "";
+        for (byte b : e) {
+            test +=" "+ Byte.toString(b);
+        }
+        return test;
+    } 
 }
