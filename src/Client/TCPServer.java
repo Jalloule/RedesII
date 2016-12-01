@@ -9,23 +9,20 @@ public class TCPServer {
 
     //Public and Prvate keys and Algorithms classes
 //------------------------------------------------------------------------------
-   private static int myPrivateKey = 29 ;
+    private static int myPrivateKey = 29;
     private static BigInteger mprk = BigInteger.valueOf(myPrivateKey);
     private static int myPublicKey = 1625;
     private static BigInteger mpuk = BigInteger.valueOf(myPublicKey);
     private static int myN = 2881;
-    private static BigInteger mn= BigInteger.valueOf(myN);
-   
-    
-    private static int clientPublicKey = 1625 ;
+    private static BigInteger mn = BigInteger.valueOf(myN);
+
+    private static int clientPublicKey = 1625;
     private static BigInteger cpuk = BigInteger.valueOf(clientPublicKey);
-    private static int clientN  = 2881;
-    private static BigInteger cn= BigInteger.valueOf(clientN);
+    private static int clientN = 2881;
+    private static BigInteger cn = BigInteger.valueOf(clientN);
 
-    private static RSA myRSA = new RSA(mprk,mpuk,mn);
-    private static RSA otherRSA = new RSA(cpuk,cn);
-
-
+    private static RSA myRSA = new RSA(mprk, mpuk, mn);
+    private static RSA otherRSA = new RSA(cpuk, cn);
 
 //------------------------------------------------------------------------------
     public static void run() throws Exception {
@@ -118,7 +115,6 @@ public class TCPServer {
                     System.out.println(bytesToString(decriptedByteArray));
 //part to split what was received
 
-
 //writes in the file the decripted byte array
                     bos.write(decriptedByteArray);//writes the file
 //RSA Decription
@@ -138,11 +134,12 @@ public class TCPServer {
         }
 
     }
-       private static String bytesToString(byte[] e) {
+
+    private static String bytesToString(byte[] e) {
         String test = "";
         for (byte b : e) {
-            test +=" "+ Byte.toString(b);
+            test += " " + Byte.toString(b);
         }
         return test;
-    } 
+    }
 }

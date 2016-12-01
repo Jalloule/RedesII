@@ -9,21 +9,20 @@ public class TCPClient {
 
 //Public and Prvate keys and Algorithms classes
 //------------------------------------------------------------------------------
-    private static int myPrivateKey = 29 ;
+    private static int myPrivateKey = 29;
     private static BigInteger mprk = BigInteger.valueOf(myPrivateKey);
     private static int myPublicKey = 1625;
     private static BigInteger mpuk = BigInteger.valueOf(myPublicKey);
     private static int myN = 2881;
-    private static BigInteger mn= BigInteger.valueOf(myN);
-   
-    
-    private static int serverPublicKey = 1625 ;
-    private static BigInteger spuk = BigInteger.valueOf(serverPublicKey);
-    private static int serverN  = 2881;
-    private static BigInteger sn= BigInteger.valueOf(serverN);
+    private static BigInteger mn = BigInteger.valueOf(myN);
 
-    private static RSA myRSA = new RSA(mprk,mpuk,mn);
-    private static RSA otherRSA = new RSA(spuk,sn);
+    private static int serverPublicKey = 1625;
+    private static BigInteger spuk = BigInteger.valueOf(serverPublicKey);
+    private static int serverN = 2881;
+    private static BigInteger sn = BigInteger.valueOf(serverN);
+
+    private static RSA myRSA = new RSA(mprk, mpuk, mn);
+    private static RSA otherRSA = new RSA(spuk, sn);
 
 //------------------------------------------------------------------------------
     public static void run() throws Exception {
@@ -150,13 +149,13 @@ public class TCPClient {
     public int getServerPublicKey() {
         return serverPublicKey;
     }
-       private static String bytesToString(byte[] e) {
+
+    private static String bytesToString(byte[] e) {
         String test = "";
         for (byte b : e) {
-            test +=" "+ Byte.toString(b);
+            test += " " + Byte.toString(b);
         }
         return test;
-    } 
-   
+    }
 
 }

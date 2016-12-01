@@ -23,22 +23,22 @@ public class RSAold {
     }
 
     public byte encriptByte(byte b) {
-        
-        return binExp(b,privateKey.intValueExact(),N.intValueExact());
+
+        return binExp(b, privateKey.intValueExact(), N.intValueExact());
 
     }
 
     public byte decriptByte(byte b) {
-       
+
         //return (new BigInteger(ba)).modPow(publicKey, N).byteValue();
-        return binExp(b,publicKey.intValueExact(),N.intValueExact());
-        
+        return binExp(b, publicKey.intValueExact(), N.intValueExact());
+
     }
+
     //Deve encriptar em blocos de 1
     public byte[] encriptByteArray(byte[] bArray) {
-        
+
         //return (new BigInteger(bArray)).modPow(privateKey, N).toByteArray(); 
-        
         byte[] bArrayEncripted = new byte[(int) bArray.length];
         for (int i = 0; i < bArray.length; i++) {
             bArrayEncripted[i] = encriptByte(bArray[i]);
@@ -46,10 +46,10 @@ public class RSAold {
 
         return bArrayEncripted;
     }
+
     //deve decriptar em blocos de 2 bytes, pois quando foi encriptado ele dobrou
     public byte[] decriptByteArray(byte[] bArray) {
-        
-        
+
         //return (new BigInteger(bArray)).modPow(publicKey, N).toByteArray(); 
         byte[] bArrayDecripted = new byte[(int) bArray.length];
         for (int i = 0; i < bArray.length; i++) {
@@ -58,11 +58,11 @@ public class RSAold {
 
         return bArrayDecripted;
     }
-    
+
     public byte binExp(byte b, int e, int n) {
-        byte resp =  b;    
+        byte resp = b;
         return resp;
-        
+
     }
 
 }
