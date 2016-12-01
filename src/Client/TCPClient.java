@@ -6,6 +6,15 @@ import java.util.Scanner;
 
 public class TCPClient {
 
+//Public and Prvate keys and Algorithms classes
+//------------------------------------------------------------------------------
+    private static int myPrivateKey;
+    private static int myPublicKey;
+    private static int serverPublicKey;
+
+    private static RSA rsa = new RSA();
+
+//------------------------------------------------------------------------------
     public static void run() throws Exception {
 
 //Sets and Prints Connection Info
@@ -79,25 +88,34 @@ public class TCPClient {
             } catch (FileNotFoundException ex) {
                 System.out.println("Fail to create file input stream, Check the file name");
             }
-            if(fis!=null){
-            //Stream that will get the array to send to the server
-            BufferedInputStream bis = new BufferedInputStream(fis);
+            if (fis != null) {
+                //Stream that will get the array to send to the server
+                BufferedInputStream bis = new BufferedInputStream(fis);
 
-            try {
+                try {
 
-                bis.read(mybytearray, 0, mybytearray.length);
-                outToServer.write(mybytearray, 0, mybytearray.length);
-                //sends to server
-                outToServer.flush();
-                outToServer.close();
-                //clientSocket.close();
+                    bis.read(mybytearray, 0, mybytearray.length);
 
-                // File sent, exit the main method
-                System.out.println("\nFile " + fileToSend + " was sent successfully");
-                return;
-            } catch (IOException ex) {
-                System.out.println("Could not send the file");
-            }
+//part to add info on the array                
+//RSA Encription
+//------------------------------------------------------------------------------             
+                    //encripts the array
+                    byte[] mybytearrayEncripted = rsa.encriptByteArray(mybytearray, serverPublicKey);
+                    //outToServer.write(mybytearray, 0, mybytearray.length);
+                    outToServer.write(mybytearrayEncripted, 0, mybytearrayEncripted.length);
+//RSA Encription
+//------------------------------------------------------------------------------                 
+                    //sends to server
+                    outToServer.flush();
+                    outToServer.close();
+                    //clientSocket.close();
+
+                    // File sent, exit the main method
+                    System.out.println("\nFile " + fileToSend + " was sent successfully");
+                    return;
+                } catch (IOException ex) {
+                    System.out.println("Could not send the file");
+                }
             }
 
         } catch (IOException ex) {
@@ -105,4 +123,21 @@ public class TCPClient {
         }
 
     }
+
+    private int getMyPrivateKey() {
+        return myPrivateKey;
+    }
+
+    public int getMyPublicKey() {
+        return myPublicKey;
+    }
+
+    public int getServerPublicKey() {
+        return serverPublicKey;
+    }
+
+    public RSA getRsa() {
+        return rsa;
+    }
+
 }

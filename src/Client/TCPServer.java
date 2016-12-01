@@ -6,6 +6,15 @@ import java.util.Scanner;
 
 public class TCPServer {
 
+    //Public and Prvate keys and Algorithms classes
+//------------------------------------------------------------------------------
+    private static int myPrivateKey;
+    private static int myPublicKey;
+    private static int clientPublicKey;
+
+    private static RSA rsa = new RSA();
+
+//------------------------------------------------------------------------------
     public static void run() throws Exception {
 
 //Opens and Prints Connection Info
@@ -85,7 +94,20 @@ public class TCPServer {
                         bytesRead = is.read(aByte);
                     } while (bytesRead != -1);//will do this until thereis something to read
                     //once it is done
-                    bos.write(baos.toByteArray());//writes the file
+//RSA Decription
+//------------------------------------------------------------------------------              
+                    //the array received
+                    byte[] receivedByteArray = baos.toByteArray();
+                    byte[] decriptedByteArray = rsa.decriptByteArray(receivedByteArray, myPrivateKey);
+
+//part to split what was received
+
+
+//writes in the file the decripted byte array
+                    bos.write(decriptedByteArray);//writes the file
+//RSA Decription
+//------------------------------------------------------------------------------   
+                    //bos.write(baos.toByteArray());//writes the file
                     bos.flush();
                     bos.close();//closes the output file
                     connectionSocket.close();//closes the connection
