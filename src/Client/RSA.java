@@ -4,11 +4,11 @@ import java.math.BigInteger;
 
 public class RSA {
 
-    private BigInteger privateKey;
-    private BigInteger publicKey;
-    private BigInteger N;
+    private int privateKey;
+    private int publicKey;
+    private int N;
 
-    public RSA(BigInteger myPrivateKey, BigInteger myPublicKey, BigInteger myN) {
+    public RSA(int myPrivateKey, int myPublicKey, int myN) {
         this.privateKey = myPrivateKey;
         this.publicKey = myPublicKey;
         this.N = myN;
@@ -16,7 +16,7 @@ public class RSA {
 
     //when use RSA to encript or decript with others key, the key you have 
     //will be use to either decript or encript
-    public RSA(BigInteger otherN, BigInteger otherPublicKey) {
+    public RSA(int otherPublicKey, int otherN) {
         this.N = otherN;
         this.privateKey = otherPublicKey;
         this.publicKey = otherPublicKey;
@@ -24,10 +24,14 @@ public class RSA {
 
     //receives one byte and returns 2 bytes representing the int already encripted
     public byte[] encriptByte(byte b) {
-
+        //
+        byte[] oneByte = new byte[1];
+        oneByte[0] = b;
+        //
         byte[] twoBytes;
-        int i = Byte.toUnsignedInt(b);
-        i = binExp(i, privateKey.intValueExact(), N.intValueExact());
+        //int i = Byte.toUnsignedInt(b);
+        int i = bytesToInt(oneByte);
+        i = binExp(i, publicKey, N);
         twoBytes = intToBytes(i, 2);
         return twoBytes;
 
@@ -38,17 +42,18 @@ public class RSA {
     public byte decriptBytePair(byte b[]) {
 
         int i = bytesToInt(b);
-        i = binExp(i, privateKey.intValueExact(), N.intValueExact());
+
+        i = binExp(i, privateKey, N);
 
         byte[] bDecripted = intToBytes(i, 1);
 
         return bDecripted[0];
+
     }
 
     //returns an array with double size with each 2 bytes representing a encripted int
     public byte[] encriptByteArray(byte[] bArray) {
 
-        //return (new BigInteger(bArray)).modPow(privateKey, N).toByteArray(); 
         byte[] bArrayEncripted = new byte[(int) bArray.length * 2];
         int j = 0;
         for (int i = 0; i < bArray.length; i++) {
@@ -79,24 +84,25 @@ public class RSA {
     }
 
     public int binExp(int b, int e, int n) {
-        int resp = b;
+        int res = b;
+        int y = 1;
 
-        return resp;
+        if (e == 0) {
+            return 1;
+        }
 
-    }
+        while (e > 1) {
+            if ((e % 2) != 0) {
+                //expoente  impar
+                y = (y * res) % n;
+                e = e - 1;
+            }
 
-    public int binExpModPow(int b, int e, int n) {
-        int resp = b;
-        BigInteger bresp, bb, ee, nn;
+            res = (res * res) % n;
+            e = e / 2;
 
-        bb = BigInteger.valueOf(b);
-        ee = BigInteger.valueOf(e);
-        nn = BigInteger.valueOf(n);
-
-        // perform modPow operation on bi1 using bi2 and exp
-        bresp = bb.modPow(ee, nn);
-        resp = bresp.intValue();
-        return resp;
+        }
+        return ((res * y) % n);
 
     }
 

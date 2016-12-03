@@ -10,21 +10,23 @@ public class TCPServer {
     //Public and Prvate keys and Algorithms classes
 //------------------------------------------------------------------------------
     private static int myPrivateKey = 29;
-    private static BigInteger mprk = BigInteger.valueOf(myPrivateKey);
+    //private static BigInteger mprk = BigInteger.valueOf(myPrivateKey);
     private static int myPublicKey = 1625;
-    private static BigInteger mpuk = BigInteger.valueOf(myPublicKey);
+    //private static BigInteger mpuk = BigInteger.valueOf(myPublicKey);
     private static int myN = 2881;
-    private static BigInteger mn = BigInteger.valueOf(myN);
+    //private static BigInteger mn = BigInteger.valueOf(myN);
 
     private static int clientPublicKey = 1625;
-    private static BigInteger cpuk = BigInteger.valueOf(clientPublicKey);
+    //private static BigInteger spuk = BigInteger.valueOf(serverPublicKey);
     private static int clientN = 2881;
-    private static BigInteger cn = BigInteger.valueOf(clientN);
+    //private static BigInteger sn = BigInteger.valueOf(serverN);
 
-    private static RSA myRSA = new RSA(mprk, mpuk, mn);
-    private static RSA otherRSA = new RSA(cpuk, cn);
-
+//    private static RSA myRSA = new RSA(mprk, mpuk, mn);
+//    private static RSA otherRSA = new RSA(spuk, sn);
+    private static RSA myRSA = new RSA(myPrivateKey, myPublicKey, myN);
+    private static RSA otherRSA = new RSA(clientPublicKey, clientN);
 //------------------------------------------------------------------------------
+
     public static void run() throws Exception {
 
 //Opens and Prints Connection Info
@@ -110,7 +112,7 @@ public class TCPServer {
                     byte[] receivedByteArray = baos.toByteArray();
                     System.out.println("byteArray before decription:");
                     System.out.println(bytesToString(receivedByteArray));
-                    byte[] decriptedByteArray = otherRSA.decriptByteArray(receivedByteArray);
+                    byte[] decriptedByteArray = myRSA.decriptByteArray(receivedByteArray);
                     System.out.println("byteArray after decription:");
                     System.out.println(bytesToString(decriptedByteArray));
 //part to split what was received
@@ -142,4 +144,23 @@ public class TCPServer {
         }
         return test;
     }
+
+    //represents an int in how many bytes I want
+    public static byte[] intToBytes(int x, int n) {
+        byte[] bytes = new byte[n];
+        for (int i = 0; i < n; i++, x >>>= 8) {
+            bytes[i] = (byte) (x & 0xFF);
+        }
+        return bytes;
+    }
+
+    //goes back from bytes to int
+    public static int bytesToInt(byte[] x) {
+        int value = 0;
+        for (int i = 0; i < x.length; i++) {
+            value += ((long) x[i] & 0xffL) << (8 * i);
+        }
+        return value;
+    }
+
 }
