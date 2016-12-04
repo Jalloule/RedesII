@@ -1,7 +1,6 @@
 package Client;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.*;
 import java.util.Scanner;
 
@@ -10,23 +9,16 @@ public class TCPServer {
     //Public and Prvate keys and Algorithms classes
 //------------------------------------------------------------------------------
     private static int myPrivateKey = 29;
-    //private static BigInteger mprk = BigInteger.valueOf(myPrivateKey);
     private static int myPublicKey = 1625;
-    //private static BigInteger mpuk = BigInteger.valueOf(myPublicKey);
     private static int myN = 2881;
-    //private static BigInteger mn = BigInteger.valueOf(myN);
 
     private static int clientPublicKey = 1625;
-    //private static BigInteger spuk = BigInteger.valueOf(serverPublicKey);
     private static int clientN = 2881;
-    //private static BigInteger sn = BigInteger.valueOf(serverN);
 
-//    private static RSA myRSA = new RSA(mprk, mpuk, mn);
-//    private static RSA otherRSA = new RSA(spuk, sn);
     private static RSA myRSA = new RSA(myPrivateKey, myPublicKey, myN);
     private static RSA otherRSA = new RSA(clientPublicKey, clientN);
-//------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
     public static void run() throws Exception {
 
 //Opens and Prints Connection Info
@@ -35,20 +27,13 @@ public class TCPServer {
         //Opens the socket
         ServerSocket welcomeSocket = new ServerSocket(6789);
         //Control messages
-        System.out.println("Socked opened");
-        System.out.println("Server is On");
-        System.out.println("Listening on Port:" + port + "\n");
-//------------------------------------------------------------------------------        
+        printControlMessages(port);
 
+//------------------------------------------------------------------------------       
 //Sets file to save info
 //------------------------------------------------------------------------------    
-        //Reader to read the user input
-        System.out.println("Write the name of the output file: ");
-        String fileOutput;//name of the outFile
-        // Reading from users keyboars input
-        Scanner reader = new Scanner(System.in);
-        fileOutput = reader.nextLine();
-        System.out.println("");
+        String fileOutput;//name of the outFile        
+        fileOutput = askFileName();
 //------------------------------------------------------------------------------   
         //Server loop, will wait for messages
         System.out.println("\nWaiting to receive something from the Client...\n");
@@ -75,6 +60,27 @@ public class TCPServer {
             receiveFile(fileOutput, connectionSocket);
 //------------------------------------------------------------------------------        
         }
+    }
+
+    private static void printControlMessages(int port) {
+        System.out.println("Socked opened");
+        System.out.println("Server is On");
+        System.out.println("Listening on Port:" + port + "\n");
+
+    }
+
+    private static String askFileName() {
+        String fileName;//name of the outFile
+
+        //Reader to read the user input
+        System.out.println("Write the name of the output file: ");
+
+        // Reading from users keyboars input
+        Scanner reader = new Scanner(System.in);
+        fileName = reader.nextLine();
+        System.out.println("");
+
+        return fileName;
     }
 
     public static void receiveFile(String fileOutput, Socket connectionSocket) {

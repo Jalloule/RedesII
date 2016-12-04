@@ -10,19 +10,12 @@ public class TCPClient {
 //Public and Prvate keys and Algorithms classes
 //------------------------------------------------------------------------------
     private static int myPrivateKey = 29;
-    //private static BigInteger mprk = BigInteger.valueOf(myPrivateKey);
     private static int myPublicKey = 1625;
-    //private static BigInteger mpuk = BigInteger.valueOf(myPublicKey);
     private static int myN = 2881;
-    //private static BigInteger mn = BigInteger.valueOf(myN);
 
     private static int serverPublicKey = 1625;
-    //private static BigInteger spuk = BigInteger.valueOf(serverPublicKey);
     private static int serverN = 2881;
-    //private static BigInteger sn = BigInteger.valueOf(serverN);
 
-//    private static RSA myRSA = new RSA(mprk, mpuk, mn);
-//    private static RSA otherRSA = new RSA(spuk, sn);
     private static RSA myRSA = new RSA(myPrivateKey, myPublicKey, myN);
     private static RSA otherRSA = new RSA(serverPublicKey, serverN);
 
@@ -34,23 +27,15 @@ public class TCPClient {
         //Port and adress to connect to the server
         int port = 6789;
         String address;
-        Scanner reader = new Scanner(System.in);  // Reading from System.in
-        System.out.println("Enter the host address: ");
-        //gets the host address to connect
-        address = reader.nextLine();
+        address = askHostAddress();
+
         //control messages
-        System.out.println("Client is On");
-        System.out.println("Will sent to Port:" + port + " on: " + address);
+        printControlMessages(port,address);
 //------------------------------------------------------------------------------
 
 //Sets file to send Info
 //------------------------------------------------------------------------------
-        String fileToSend;
-        //Reader to read the user input
-        System.out.println("\nWrite the name of the file to send: ");
-        // Reading from users keyboars input
-        fileToSend = reader.nextLine();
-        System.out.println("");
+        String fileToSend = askFileName();
 //------------------------------------------------------------------------------
 
         try {//tries to connect to server
@@ -80,7 +65,38 @@ public class TCPClient {
         }
 
     }
+    
+       private static String askHostAddress() {
+        String address;
 
+        Scanner reader = new Scanner(System.in);  // Reading from System.in
+        System.out.println("Enter the host address: ");
+        //gets the host address to connect
+        address = reader.nextLine();
+
+        return address;
+    }
+
+    private static void printControlMessages(int port,String address) {
+        System.out.println("Client is On");
+        System.out.println("Will sent to Port:" + port + " on: " + address);
+
+    }
+
+       private static String askFileName() {
+        String fileName;//name of the outFile
+
+        //Reader to read the user input
+        System.out.println("\nWrite the name of the file to send: ");
+
+        // Reading from users keyboars input
+        Scanner reader = new Scanner(System.in);
+        fileName = reader.nextLine();
+        System.out.println("");
+
+        return fileName;
+    }
+    
     public static void sendFile(String fileToSend, Socket clientSocket) {
 
         try {
@@ -139,18 +155,6 @@ public class TCPClient {
             System.out.println("Could not create file output stream");
         }
 
-    }
-
-    private int getMyPrivateKey() {
-        return myPrivateKey;
-    }
-
-    public int getMyPublicKey() {
-        return myPublicKey;
-    }
-
-    public int getServerPublicKey() {
-        return serverPublicKey;
     }
 
     private static String bytesToString(byte[] e) {
