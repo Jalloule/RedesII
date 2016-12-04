@@ -6,32 +6,99 @@ public class test {
         int myPrivateKey = 29;
 
         int myPublicKey = 1625;
+        
+        int clientPublicKey = 1625;
 
         int myN = 2881;
 
         RSA myRSA = new RSA(myPrivateKey, myPublicKey, myN);
+        myRSA.setOtherRSA(clientPublicKey, myN);
 
         int base = 25;
         System.out.println("base " + 25);
-        int encript = myRSA.binExp(base, myPublicKey, myN);
+        int encript = myRSA.binExp(base, myPrivateKey, myN);
         System.out.println(encript);
 
-        int decript = myRSA.binExp(encript, myPrivateKey, myN);
+        int decript = myRSA.binExp(encript, myPublicKey, myN);
         System.out.println(decript);
 
-        byte[] baseByte = new byte[4];
+        byte[] baseByte = new byte[1];
         baseByte[0] = 25;
-        baseByte[1] = 25;
-        baseByte[2] = 25;
-        baseByte[3] = 25;
+
+        System.out.println("TEST");
+        
         System.out.println(bytesToString(baseByte));
+       //byte[] encrip = myRSA.encriptByteArrayWithPrivate(baseByte);
+       byte[] encrip = myRSA.encriptByteArrayWithPrivate(baseByte);
+        bytesToStringBlock2(encrip);
+        System.out.println("");
+        
+        //byte[] decrip = myRSA.decriptByteArrayWithPublic(encrip);
+        byte[] decrip = myRSA.decriptByteArrayWithPublic(encrip);
+        System.out.println(bytesToString(decrip));
+        
+        
+        System.out.println("TEST");
+        
+        
 
-        byte[] encripted = myRSA.encriptByteArray(baseByte);
-        bytesToStringBlock2(encripted);
+        byte[] encripted = myRSA.encriptByteArrayWithPrivate(baseByte);
+        System.out.println(bytesToString(encripted));
+        
+        byte[] concatMessage = new byte[baseByte.length+encripted.length];
+        for (int i = 0; i < baseByte.length; i++) {
+            concatMessage[i] = baseByte[i];            
+        }
+        int j = 0;
+        for (int i = baseByte.length; i < concatMessage.length; i++) {
+            concatMessage[i] = encripted[j]; 
+            j++;
+        }
+        
+        System.out.println("concat Message"+bytesToString(concatMessage));
+        byte[] concatEncripted = myRSA.encriptByteArrayWithOther(concatMessage);
+        System.out.println("concat Message encripted"+bytesToString(concatEncripted));
+        
+        
+        //--------------------------------------------
 
-        byte[] decripted = myRSA.decriptByteArray(encripted);
-        System.out.println(bytesToString(decripted));
+        byte[] concatDecripted = myRSA.decriptByteArray(concatEncripted);
+        int size = concatDecripted.length/3;        
+        System.out.println("\n"+bytesToString(concatDecripted ));
+        
+        byte[] originalMessage = new byte[size];
+        byte[] encriptedMessage = new byte[size*2];
+        
+        for (int i = 0; i < size; i++) {
+            originalMessage[i] =  concatDecripted[i];            
+        }
+        j = 0;
+        for (int i = size; i < size*3; i++) {
+            encriptedMessage[j] =  concatDecripted[i];
+            j++;
+        }
+        
+        System.out.println("\n"+bytesToString(originalMessage));
+        System.out.println("\n"+bytesToString(encriptedMessage));
+        
+        byte[] decriptedMessage = myRSA.decriptByteArrayWithPublic(encriptedMessage);
+        
+        System.out.println("\n"+bytesToString(originalMessage));
+        System.out.println("\n"+bytesToString(decriptedMessage));
+        
+        System.out.println(isByteArrayEqual(originalMessage,decriptedMessage));
+        
+               
+        
 
+    }
+    private static boolean isByteArrayEqual(byte[]original, byte[]decripted){
+        if(original.length!=decripted.length) return false;
+        for (int i = 0; i < decripted.length; i++) {
+            if(original[i]!=decripted[i])return false;            
+        }
+        
+        return true;
     }
 
     private static String bytesToString(byte[] e) {
@@ -48,7 +115,7 @@ public class test {
             byte toShow[] = new byte[2];
             toShow[0] = e[i];
             toShow[1] = e[i + 1];
-            System.out.println(bytesToInt(toShow));
+            System.out.print(" "+bytesToInt(toShow));
 
         }
 

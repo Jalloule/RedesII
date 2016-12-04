@@ -15,11 +15,13 @@ public class TCPServer {
     private static int clientPublicKey = 1625;
     private static int clientN = 2881;
 
-    private static RSA myRSA = new RSA(myPrivateKey, myPublicKey, myN);
-    private static RSA otherRSA = new RSA(clientPublicKey, clientN);
+    private static RSA myRSA;
+    //private static RSA otherRSA = new RSA(clientPublicKey, clientN);
 
 //------------------------------------------------------------------------------
     public static void run() throws Exception {
+        myRSA = new RSA(myPrivateKey, myPublicKey, myN);
+        myRSA.setOtherRSA(clientPublicKey,clientN);
 
 //Opens and Prints Connection Info
 //------------------------------------------------------------------------------
@@ -115,16 +117,33 @@ public class TCPServer {
 //RSA Decription
 //------------------------------------------------------------------------------              
                     //the array received
-                    byte[] receivedByteArray = baos.toByteArray();
-                    System.out.println("byteArray before decription:");
-                    System.out.println(bytesToString(receivedByteArray));
-                    byte[] decriptedByteArray = myRSA.decriptByteArray(receivedByteArray);
-                    System.out.println("byteArray after decription:");
-                    System.out.println(bytesToString(decriptedByteArray));
-//part to split what was received
+                    byte[] receivedMessageEncripted = baos.toByteArray();
+                    System.out.println("(originalFile+originalFileEncripted) encripted with Servers Public Key:");
+                    System.out.println(bytesToString(receivedMessageEncripted));
 
+                    byte[] receivedMessage = myRSA.decriptByteArray(receivedMessageEncripted);
+                    System.out.println("(originalFile+originalFileEncripted) decripted using Servers Private Key:");
+                    System.out.println(bytesToString(receivedMessage));
+
+                    byte[] originalFile = extractOriginalFile(receivedMessage);
+                    System.out.println("originalFile not encripted:");
+                    System.out.println(bytesToString(originalFile));
+
+                    byte[] originalFileEncripted = extractOriginalFileEncripted(receivedMessage);
+                    System.out.println("originalFile encripted with Clients Private Key:");
+                    System.out.println(bytesToString(originalFileEncripted));
+
+                    //byte[] originalFileDecripted = otherRSA.decriptByteArray(originalFileEncripted);
+                    byte[] originalFileDecripted = myRSA.decriptByteArrayWithOther(originalFileEncripted);
+
+                    System.out.println("originalFile decripted using Clients Public Key:");
+                    System.out.println(bytesToString(originalFileDecripted));
+
+                    System.out.print("Comparison between originalFile and originalFileDecripted: "+ isByteArrayEqual(originalFile, originalFileDecripted));
+
+//part to split what was received
 //writes in the file the decripted byte array
-                    bos.write(decriptedByteArray);//writes the file
+                    bos.write(originalFile);//writes the file
 //RSA Decription
 //------------------------------------------------------------------------------   
                     //bos.write(baos.toByteArray());//writes the file
@@ -141,6 +160,41 @@ public class TCPServer {
             System.out.println("Could not create input stream");
         }
 
+    }
+
+    private static byte[] extractOriginalFile(byte[] receivedMessage) {
+        int size = receivedMessage.length / 3;
+        byte[] originalFile = new byte[size];
+        for (int i = 0; i < size; i++) {
+            originalFile[i] = receivedMessage[i];
+        }
+
+        return originalFile;
+    }
+
+    private static byte[] extractOriginalFileEncripted(byte[] receivedMessage) {
+        int size = receivedMessage.length / 3;
+        byte[] originalFileEncripted = new byte[size * 2];
+        int j = 0;
+        for (int i = size; i < size * 3; i++) {
+            originalFileEncripted[j] = receivedMessage[i];
+            j++;
+        }
+
+        return originalFileEncripted;
+    }
+
+    private static boolean isByteArrayEqual(byte[] original, byte[] decripted) {
+        if (original.length != decripted.length) {
+            return false;
+        }
+        for (int i = 0; i < decripted.length; i++) {
+            if (original[i] != decripted[i]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static String bytesToString(byte[] e) {

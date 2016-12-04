@@ -16,12 +16,14 @@ public class TCPClient {
     private static int serverPublicKey = 1625;
     private static int serverN = 2881;
 
-    private static RSA myRSA = new RSA(myPrivateKey, myPublicKey, myN);
-    private static RSA otherRSA = new RSA(serverPublicKey, serverN);
+    private static RSA myRSA;
+    
+    //private static RSA otherRSA = new RSA(serverPublicKey, serverN);
 
 //------------------------------------------------------------------------------
     public static void run() throws Exception {
-
+        myRSA = new RSA(myPrivateKey, myPublicKey, myN);
+        myRSA.setOtherRSA(serverPublicKey,serverN);
 //Sets and Prints Connection Info
 //------------------------------------------------------------------------------
         //Port and adress to connect to the server
@@ -107,7 +109,7 @@ public class TCPClient {
             //Creates the file to send
             File myFile = new File(fileToSend);
             //byteArray to read the file to
-            byte[] mybytearray = new byte[(int) myFile.length()];
+            byte[] originalFile = new byte[(int) myFile.length()];
 
             FileInputStream fis = null;
 
@@ -122,20 +124,32 @@ public class TCPClient {
 
                 try {
 
-                    bis.read(mybytearray, 0, mybytearray.length);
+                    bis.read(originalFile, 0, originalFile.length);
 
 //part to add info on the array                
 //RSA Encription
 //------------------------------------------------------------------------------             
-                    //encripts the array
-                    System.out.println("byteArray before encription:");
-                    System.out.println(bytesToString(mybytearray));
-                    //byte[] mybytearrayEncripted = myRSA.encriptByteArray(mybytearray);
-                    byte[] mybytearrayEncripted = otherRSA.encriptByteArray(mybytearray);
-                    System.out.println("byteArray after encription:");
-                    System.out.println(bytesToString(mybytearrayEncripted));
+                    //the original file
+                    System.out.println("originalFile before encription:");
+                    System.out.println(bytesToString(originalFile));
+                    //the originall file encripted/signed by the sender
+                    //yte[] originalFileEncripted = myRSA.encriptByteArray(originalFile);
+                    byte[] originalFileEncripted = myRSA.encriptByteArrayWithPrivate(originalFile);  
+                    System.out.println("originalFile encripted with Clients Private Key:");
+                    System.out.println(bytesToString(originalFileEncripted));
+                    
+                    //message thta consists in the file to send 
+                    //together with the signed file to send (to later verify integrit and auth)
+                    byte[]messageToSend = concatByteArrays(originalFile,originalFileEncripted);
+                    System.out.println("(originalFile+originalFileEncripted) before encription:");
+                    System.out.println(bytesToString(messageToSend));
+                    
+                    byte[]messageToSendEncripted = myRSA.encriptByteArrayWithOther(messageToSend);
+                    System.out.println("(originalFile+originalFileEncripted) encripted with Servers Public Key:");
+                    System.out.println(bytesToString(messageToSendEncripted ));
+                    
                     //outToServer.write(mybytearray, 0, mybytearray.length);
-                    outToServer.write(mybytearrayEncripted, 0, mybytearrayEncripted.length);
+                    outToServer.write(messageToSendEncripted, 0, messageToSendEncripted.length);
 //RSA Encription
 //------------------------------------------------------------------------------                 
                     //sends to server
@@ -155,6 +169,21 @@ public class TCPClient {
             System.out.println("Could not create file output stream");
         }
 
+    }
+    
+    //puts together 2 byte arrays
+    private static byte[] concatByteArrays(byte[]a, byte[]b){
+        byte[] c = new byte[a.length+b.length];
+        for (int i = 0; i < a.length; i++) {
+            c[i] = a[i];            
+        }
+        int j = 0;
+        for (int i = a.length; i < c.length; i++) {
+            c[i] = b[j]; 
+            j++;
+        }        
+        
+        return c;
     }
 
     private static String bytesToString(byte[] e) {

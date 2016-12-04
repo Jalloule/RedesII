@@ -1,24 +1,32 @@
 package Client;
 
+import static Client.test.bytesToInt;
+
 
 public class RSA {
-
+    
+    private int realPrivateKey;
+    private int realPublicKey;
+    private int realN;
+    
     private int privateKey;
     private int publicKey;
     private int N;
+    
+    private int otherPublicKey;
+    private int otherN;
 
     public RSA(int myPrivateKey, int myPublicKey, int myN) {
-        this.privateKey = myPrivateKey;
-        this.publicKey = myPublicKey;
-        this.N = myN;
+        this.privateKey = this.realPrivateKey = myPrivateKey;
+        this.publicKey  = this.realPublicKey = myPublicKey;
+        this.N = this.realN= myN;
     }
 
     //when use RSA to encript or decript with others key, the key you have 
     //will be use to either decript or encript
-    public RSA(int otherPublicKey, int otherN) {
-        this.N = otherN;
-        this.privateKey = otherPublicKey;
-        this.publicKey = otherPublicKey;
+    public void setOtherRSA(int otherPublicKey, int otherN) {
+      this.otherN = otherN;
+      this.otherPublicKey = otherPublicKey;
     }
 
     //receives one byte and returns 2 bytes representing the int already encripted
@@ -35,16 +43,20 @@ public class RSA {
         return twoBytes;
 
     }
+    
+
 
     //receives a byte pait that representes a encripted int to decript
     //returns that int decripted in one byte
     public byte decriptBytePair(byte b[]) {
 
         int i = bytesToInt(b);
+       
 
         i = binExp(i, privateKey, N);
 
         byte[] bDecripted = intToBytes(i, 1);
+        
 
         return bDecripted[0];
 
@@ -64,6 +76,50 @@ public class RSA {
 
         return bArrayEncripted;
     }
+    
+    public byte[] encriptByteArrayWithOther(byte[] bArray) {
+        byte[]resp;
+        useOtherKeys();
+        resp = encriptByteArray(bArray);
+        defaultKeys();
+        return resp;   
+        
+       
+    }
+    
+     public byte[] encriptByteArrayWithPrivate(byte[] bArray) {
+        byte[]resp;
+        invertKeys();
+        resp = encriptByteArray(bArray);
+        defaultKeys();
+        return resp;   
+        
+       
+    }
+     
+    public byte[] decriptByteArrayWithPublic(byte[] bArray) {
+        byte[]resp;
+        invertKeys();
+        resp = decriptByteArray(bArray);
+        defaultKeys();
+        return resp;   
+        
+       
+    } 
+     
+     public byte[] decriptByteArrayWithOther(byte[] bArray) {
+        byte[]resp;
+        useOtherKeys();
+        resp = decriptByteArray(bArray);
+        defaultKeys();
+        return resp;   
+        
+       
+    }
+    
+    
+    
+
 
     //gets a double size byte array,  reads in blocls of 2 bytes, each 2 bytes is an encripted int
     //saves the decripted ints in bytes in an array with half size
@@ -75,12 +131,14 @@ public class RSA {
         for (int i = 0; i < bArray.length; i += 2) {
             toSend[0] = bArray[i];
             toSend[1] = bArray[i + 1];
+            
             bArrayDecripted[j] = decriptBytePair(toSend);
             j++;
         }
 
         return bArrayDecripted;
     }
+    
 
     public int binExp(int b, int e, int n) {
         int res = b;
@@ -122,5 +180,30 @@ public class RSA {
         }
         return value;
     }
+    
+    public void invertKeys(){
+        int aux = privateKey;
+        privateKey = publicKey;
+        publicKey = aux;
+        
+    }
+    
+    public void useOtherKeys(){
+        
+        privateKey = otherPublicKey;
+        publicKey = otherPublicKey;
+        N = otherN;
+        
+    }
+    public void defaultKeys(){
+        privateKey = realPrivateKey;
+        publicKey = realPublicKey;
+        N = realN;
+        
+    }
+
+     
+ 
+    
 
 }
