@@ -8,20 +8,26 @@ public class TCPServer {
 
     //Public and Prvate keys and Algorithms classes
 //------------------------------------------------------------------------------
-    private static int myPrivateKey = 29;
-    private static int myPublicKey = 1625;
-    private static int myN = 2881;
+    private int myPrivateKey;
+    private int myPublicKey;
+    private int myN;
 
-    private static int clientPublicKey = 1625;
-    private static int clientN = 2881;
+    private int clientPublicKey;
+    private int clientN;
 
-    private static RSA myRSA;
-    //private static RSA otherRSA = new RSA(clientPublicKey, clientN);
+    private RSA myRSA;
 
 //------------------------------------------------------------------------------
-    public static void run() throws Exception {
+    public TCPServer() {
+        this.myPrivateKey = 19;
+        this.myPublicKey = 479;
+        this.myN = 781;
+
+    }
+
+    public void run() throws Exception {
         myRSA = new RSA(myPrivateKey, myPublicKey, myN);
-        myRSA.setOtherRSA(clientPublicKey,clientN);
+        //myRSA.setOtherRSA(clientPublicKey,clientN);
 
 //Opens and Prints Connection Info
 //------------------------------------------------------------------------------
@@ -47,14 +53,7 @@ public class TCPServer {
 
 //Initial message interchange
 //------------------------------------------------------------------------------ 
-            BufferedReader dataInFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-            DataOutputStream dataOutToClient = new DataOutputStream(connectionSocket.getOutputStream());
-
-            String clientMessage = dataInFromClient.readLine();
-            System.out.println("Received" + " '" + clientMessage + "' " + "from client\n");
-
-            dataOutToClient.writeBytes("HiFromServer" + "\n");
-            System.out.println("Sent " + "HiFromServer\n");
+            publicKeyExchange(connectionSocket);
 //------------------------------------------------------------------------------ 
 
 //Calls the send to file function
@@ -64,14 +63,36 @@ public class TCPServer {
         }
     }
 
-    private static void printControlMessages(int port) {
+    public void publicKeyExchange(Socket connectionSocket) {
+        try {
+            BufferedReader dataInFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            DataOutputStream dataOutToClient = new DataOutputStream(connectionSocket.getOutputStream());
+
+            String clientMessage = dataInFromClient.readLine();
+            System.out.println("Received pair " + "'" + clientMessage + "'" + " from client\n");
+
+            String[] nAndKey = clientMessage.split(" ");
+            setClientN(Integer.parseInt(nAndKey[0]));
+            setClientPublicKey(Integer.parseInt(nAndKey[1]));
+            myRSA.setOtherRSA(clientPublicKey, clientN);
+
+            dataOutToClient.writeBytes(myN + " " + myPublicKey + "\n");
+            System.out.println("Sent " + "N:" + myN + " PublicKey:" + myPublicKey + " \n");
+
+        } catch (IOException ex) {
+            System.out.println("Could not exchange keys");
+        }
+
+    }
+
+    private void printControlMessages(int port) {
         System.out.println("Socked opened");
         System.out.println("Server is On");
         System.out.println("Listening on Port:" + port + "\n");
 
     }
 
-    private static String askFileName() {
+    private String askFileName() {
         String fileName;//name of the outFile
 
         //Reader to read the user input
@@ -85,7 +106,7 @@ public class TCPServer {
         return fileName;
     }
 
-    public static void receiveFile(String fileOutput, Socket connectionSocket) {
+    public void receiveFile(String fileOutput, Socket connectionSocket) {
 
         try {
             //Input stream to read the file
@@ -139,7 +160,7 @@ public class TCPServer {
                     System.out.println("originalFile decripted using Clients Public Key:");
                     System.out.println(bytesToString(originalFileDecripted));
 
-                    System.out.print("Comparison between originalFile and originalFileDecripted: "+ isByteArrayEqual(originalFile, originalFileDecripted));
+                    System.out.print("Comparison between originalFile and originalFileDecripted: " + isByteArrayEqual(originalFile, originalFileDecripted));
 
 //part to split what was received
 //writes in the file the decripted byte array
@@ -162,7 +183,7 @@ public class TCPServer {
 
     }
 
-    private static byte[] extractOriginalFile(byte[] receivedMessage) {
+    private byte[] extractOriginalFile(byte[] receivedMessage) {
         int size = receivedMessage.length / 3;
         byte[] originalFile = new byte[size];
         for (int i = 0; i < size; i++) {
@@ -172,7 +193,7 @@ public class TCPServer {
         return originalFile;
     }
 
-    private static byte[] extractOriginalFileEncripted(byte[] receivedMessage) {
+    private byte[] extractOriginalFileEncripted(byte[] receivedMessage) {
         int size = receivedMessage.length / 3;
         byte[] originalFileEncripted = new byte[size * 2];
         int j = 0;
@@ -184,7 +205,7 @@ public class TCPServer {
         return originalFileEncripted;
     }
 
-    private static boolean isByteArrayEqual(byte[] original, byte[] decripted) {
+    private boolean isByteArrayEqual(byte[] original, byte[] decripted) {
         if (original.length != decripted.length) {
             return false;
         }
@@ -197,7 +218,7 @@ public class TCPServer {
         return true;
     }
 
-    private static String bytesToString(byte[] e) {
+    private String bytesToString(byte[] e) {
         String test = "";
         for (byte b : e) {
             test += " " + Byte.toString(b);
@@ -206,7 +227,7 @@ public class TCPServer {
     }
 
     //represents an int in how many bytes I want
-    public static byte[] intToBytes(int x, int n) {
+    public byte[] intToBytes(int x, int n) {
         byte[] bytes = new byte[n];
         for (int i = 0; i < n; i++, x >>>= 8) {
             bytes[i] = (byte) (x & 0xFF);
@@ -215,12 +236,32 @@ public class TCPServer {
     }
 
     //goes back from bytes to int
-    public static int bytesToInt(byte[] x) {
+    public int bytesToInt(byte[] x) {
         int value = 0;
         for (int i = 0; i < x.length; i++) {
             value += ((long) x[i] & 0xffL) << (8 * i);
         }
         return value;
+    }
+
+    public void setClientPublicKey(int clientPublicKey) {
+        this.clientPublicKey = clientPublicKey;
+    }
+
+    public void setClientN(int clientN) {
+        this.clientN = clientN;
+    }
+
+    public void setKeys() {
+        Scanner reader = new Scanner(System.in);
+        System.out.println("Enter the N: ");
+        this.myN = reader.nextInt();
+        System.out.println("Enter the PublicKey: ");
+        this.myPublicKey = reader.nextInt();
+        System.out.println("Enter the PrivateKey: ");
+        this.myPrivateKey = reader.nextInt();
+        System.out.println("");
+
     }
 
 }

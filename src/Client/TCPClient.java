@@ -1,29 +1,32 @@
 package Client;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.*;
 import java.util.Scanner;
 
 public class TCPClient {
 
-//Public and Prvate keys and Algorithms classes
+    //Public and Prvate keys and Algorithms classes
 //------------------------------------------------------------------------------
-    private static int myPrivateKey = 29;
-    private static int myPublicKey = 1625;
-    private static int myN = 2881;
+    private int myPrivateKey;
+    private int myPublicKey;
+    private int myN;
 
-    private static int serverPublicKey = 1625;
-    private static int serverN = 2881;
+    private int serverPublicKey;
+    private int serverN;
 
-    private static RSA myRSA;
-    
-    //private static RSA otherRSA = new RSA(serverPublicKey, serverN);
+    private RSA myRSA;
 
 //------------------------------------------------------------------------------
-    public static void run() throws Exception {
+    public TCPClient() {
+        this.myPrivateKey = 29;
+        this.myPublicKey = 1625;
+        this.myN = 2881;
+    }
+
+    public void run() throws Exception {
         myRSA = new RSA(myPrivateKey, myPublicKey, myN);
-        myRSA.setOtherRSA(serverPublicKey,serverN);
+        //myRSA.setOtherRSA(serverPublicKey,serverN);
 //Sets and Prints Connection Info
 //------------------------------------------------------------------------------
         //Port and adress to connect to the server
@@ -32,7 +35,7 @@ public class TCPClient {
         address = askHostAddress();
 
         //control messages
-        printControlMessages(port,address);
+        printControlMessages(port, address);
 //------------------------------------------------------------------------------
 
 //Sets file to send Info
@@ -48,13 +51,7 @@ public class TCPClient {
 
 //Initial message interchange
 //------------------------------------------------------------------------------            
-            DataOutputStream dataOutToServer = new DataOutputStream(clientSocket.getOutputStream());
-            BufferedReader dataInFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-            dataOutToServer.writeBytes("HiFromClient" + "\n");
-            System.out.println("Sent " + "HiFromClient\n");
-            String serverResponse = dataInFromServer.readLine();
-            System.out.println("Received" + " '" + serverResponse + "' " + "from Server\n");
+            publicKeyExchange(clientSocket);
 //------------------------------------------------------------------------------   
 
 //Calls the send to file function
@@ -67,8 +64,29 @@ public class TCPClient {
         }
 
     }
-    
-       private static String askHostAddress() {
+
+    public void publicKeyExchange(Socket clientSocket) {
+        try {
+            DataOutputStream dataOutToServer = new DataOutputStream(clientSocket.getOutputStream());
+            BufferedReader dataInFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+            dataOutToServer.writeBytes(myN + " " + myPublicKey + "\n");
+            System.out.println("Sent " + "N:" + myN + " PublicKey:" + myPublicKey + " \n");
+            String serverResponse = dataInFromServer.readLine();
+            System.out.println("Received pair " + "'" + serverResponse + "'" + " from Server\n");
+
+            String[] nAndKey = serverResponse.split(" ");
+            setServerN(Integer.parseInt(nAndKey[0]));
+            setServerPublicKey(Integer.parseInt(nAndKey[1]));
+            myRSA.setOtherRSA(serverPublicKey, serverN);
+
+        } catch (IOException ex) {
+            System.out.println("Could not exchange keys");
+        }
+
+    }
+
+    private String askHostAddress() {
         String address;
 
         Scanner reader = new Scanner(System.in);  // Reading from System.in
@@ -79,13 +97,13 @@ public class TCPClient {
         return address;
     }
 
-    private static void printControlMessages(int port,String address) {
+    private void printControlMessages(int port, String address) {
         System.out.println("Client is On");
         System.out.println("Will sent to Port:" + port + " on: " + address);
 
     }
 
-       private static String askFileName() {
+    private String askFileName() {
         String fileName;//name of the outFile
 
         //Reader to read the user input
@@ -98,8 +116,8 @@ public class TCPClient {
 
         return fileName;
     }
-    
-    public static void sendFile(String fileToSend, Socket clientSocket) {
+
+    public void sendFile(String fileToSend, Socket clientSocket) {
 
         try {
             //creates the buffered output stream to server
@@ -134,20 +152,20 @@ public class TCPClient {
                     System.out.println(bytesToString(originalFile));
                     //the originall file encripted/signed by the sender
                     //yte[] originalFileEncripted = myRSA.encriptByteArray(originalFile);
-                    byte[] originalFileEncripted = myRSA.encriptByteArrayWithPrivate(originalFile);  
+                    byte[] originalFileEncripted = myRSA.encriptByteArrayWithPrivate(originalFile);
                     System.out.println("originalFile encripted with Clients Private Key:");
                     System.out.println(bytesToString(originalFileEncripted));
-                    
+
                     //message thta consists in the file to send 
                     //together with the signed file to send (to later verify integrit and auth)
-                    byte[]messageToSend = concatByteArrays(originalFile,originalFileEncripted);
+                    byte[] messageToSend = concatByteArrays(originalFile, originalFileEncripted);
                     System.out.println("(originalFile+originalFileEncripted) before encription:");
                     System.out.println(bytesToString(messageToSend));
-                    
-                    byte[]messageToSendEncripted = myRSA.encriptByteArrayWithOther(messageToSend);
+
+                    byte[] messageToSendEncripted = myRSA.encriptByteArrayWithOther(messageToSend);
                     System.out.println("(originalFile+originalFileEncripted) encripted with Servers Public Key:");
-                    System.out.println(bytesToString(messageToSendEncripted ));
-                    
+                    System.out.println(bytesToString(messageToSendEncripted));
+
                     //outToServer.write(mybytearray, 0, mybytearray.length);
                     outToServer.write(messageToSendEncripted, 0, messageToSendEncripted.length);
 //RSA Encription
@@ -170,23 +188,23 @@ public class TCPClient {
         }
 
     }
-    
+
     //puts together 2 byte arrays
-    private static byte[] concatByteArrays(byte[]a, byte[]b){
-        byte[] c = new byte[a.length+b.length];
+    private byte[] concatByteArrays(byte[] a, byte[] b) {
+        byte[] c = new byte[a.length + b.length];
         for (int i = 0; i < a.length; i++) {
-            c[i] = a[i];            
+            c[i] = a[i];
         }
         int j = 0;
         for (int i = a.length; i < c.length; i++) {
-            c[i] = b[j]; 
+            c[i] = b[j];
             j++;
-        }        
-        
+        }
+
         return c;
     }
 
-    private static String bytesToString(byte[] e) {
+    private String bytesToString(byte[] e) {
         String test = "";
         for (byte b : e) {
             test += " " + Byte.toString(b);
@@ -195,7 +213,7 @@ public class TCPClient {
     }
 
     //represents an int in how many bytes I want
-    public static byte[] intToBytes(int x, int n) {
+    public byte[] intToBytes(int x, int n) {
         byte[] bytes = new byte[n];
         for (int i = 0; i < n; i++, x >>>= 8) {
             bytes[i] = (byte) (x & 0xFF);
@@ -204,11 +222,32 @@ public class TCPClient {
     }
 
     //goes back from bytes to int
-    public static int bytesToInt(byte[] x) {
+    public int bytesToInt(byte[] x) {
         int value = 0;
         for (int i = 0; i < x.length; i++) {
             value += ((long) x[i] & 0xffL) << (8 * i);
         }
         return value;
     }
+
+    public void setServerPublicKey(int serverPublicKey) {
+        this.serverPublicKey = serverPublicKey;
+    }
+
+    public void setServerN(int serverN) {
+        this.serverN = serverN;
+    }
+
+    public void setKeys() {
+        Scanner reader = new Scanner(System.in);
+        System.out.println("Enter the N: ");
+        this.myN = reader.nextInt();
+        System.out.println("Enter the PublicKey: ");
+        this.myPublicKey = reader.nextInt();
+        System.out.println("Enter the PrivateKey: ");
+        this.myPrivateKey = reader.nextInt();
+        System.out.println("");
+
+    }
+
 }
