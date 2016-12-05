@@ -19,9 +19,7 @@ public class TCPClient {
 
 //------------------------------------------------------------------------------
     public TCPClient() {
-        this.myPrivateKey = 29;
-        this.myPublicKey = 1625;
-        this.myN = 2881;
+        
     }
 
     public void run() throws Exception {
@@ -71,9 +69,9 @@ public class TCPClient {
             BufferedReader dataInFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             dataOutToServer.writeBytes(myN + " " + myPublicKey + "\n");
-            System.out.println("Sent " + "N:" + myN + " PublicKey:" + myPublicKey + " \n");
+            System.out.println("Sent PublicKey Pair: (" + myN + " " + myPublicKey +")\n");
             String serverResponse = dataInFromServer.readLine();
-            System.out.println("Received pair " + "'" + serverResponse + "'" + " from Server\n");
+            System.out.println("Received pair " + "(" + serverResponse + ")" + " from Server\n");
 
             String[] nAndKey = serverResponse.split(" ");
             setServerN(Integer.parseInt(nAndKey[0]));
@@ -98,7 +96,7 @@ public class TCPClient {
     }
 
     private void printControlMessages(int port, String address) {
-        System.out.println("Client is On");
+        System.out.println("\nClient is On");
         System.out.println("Will sent to Port:" + port + " on: " + address);
 
     }
@@ -238,7 +236,24 @@ public class TCPClient {
         this.serverN = serverN;
     }
 
-    public void setKeys() {
+    public void preSetKeys() {
+        System.out.println("\n-- Client Mode --\n");
+        
+        this.myPrivateKey = 29;
+        this.myPublicKey = 1625;
+        this.myN = 2881;
+        System.out.println("Pre-Set RSA Key Pairs");
+        System.out.println("Public: ("+myN+" "+myPublicKey+")");
+        System.out.println("Private: ("+myN+" "+myPrivateKey+")\n");
+        
+                
+       
+
+    }
+    
+    public void askForKeys() {
+        
+        System.out.println("\n-- Client Mode --\n");
         Scanner reader = new Scanner(System.in);
         System.out.println("Enter the N: ");
         this.myN = reader.nextInt();
@@ -246,7 +261,10 @@ public class TCPClient {
         this.myPublicKey = reader.nextInt();
         System.out.println("Enter the PrivateKey: ");
         this.myPrivateKey = reader.nextInt();
-        System.out.println("");
+        
+        System.out.println("\nSelected Key Pairs");
+        System.out.println("Public: ("+myN+" "+myPublicKey+")");
+        System.out.println("Private: ("+myN+" "+myPrivateKey+")\n");
 
     }
 

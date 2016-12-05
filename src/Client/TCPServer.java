@@ -19,9 +19,6 @@ public class TCPServer {
 
 //------------------------------------------------------------------------------
     public TCPServer() {
-        this.myPrivateKey = 19;
-        this.myPublicKey = 479;
-        this.myN = 781;
 
     }
 
@@ -44,7 +41,7 @@ public class TCPServer {
         fileOutput = askFileName();
 //------------------------------------------------------------------------------   
         //Server loop, will wait for messages
-        System.out.println("\nWaiting to receive something from the Client...\n");
+        System.out.println("Waiting to receive something from the Client...\n");
         while (true) {
 //Creation of the socket
 //------------------------------------------------------------------------------
@@ -70,7 +67,7 @@ public class TCPServer {
             DataOutputStream dataOutToClient = new DataOutputStream(connectionSocket.getOutputStream());
 
             String clientMessage = dataInFromClient.readLine();
-            System.out.println("Received pair " + "'" + clientMessage + "'" + " from client\n");
+            System.out.println("Received pair " + "(" + clientMessage + ")" + " from Client\n");
 
             String[] nAndKey = clientMessage.split(" ");
             setClientN(Integer.parseInt(nAndKey[0]));
@@ -78,8 +75,7 @@ public class TCPServer {
             myRSA.setOtherRSA(clientPublicKey, clientN);
 
             dataOutToClient.writeBytes(myN + " " + myPublicKey + "\n");
-            System.out.println("Sent " + "N:" + myN + " PublicKey:" + myPublicKey + " \n");
-
+            System.out.println("Sent PublicKey Pair: (" + myN + " " + myPublicKey + ")\n");
         } catch (IOException ex) {
             System.out.println("Could not exchange keys");
         }
@@ -161,19 +157,27 @@ public class TCPServer {
                     System.out.println("originalFile decripted using Clients Public Key:");
                     System.out.println(bytesToString(originalFileDecripted));
 
-                    System.out.print("Comparison between originalFile and originalFileDecripted: " + isByteArrayEqual(originalFile, originalFileDecripted));
+                    System.out.print("\nComparison between originalFile and originalFileDecripted: " + isByteArrayEqual(originalFile, originalFileDecripted) + "\n");
 
 //part to split what was received
 //writes in the file the decripted byte array
-                    bos.write(originalFile);//writes the file
 //RSA Decription
 //------------------------------------------------------------------------------   
-                    //bos.write(baos.toByteArray());//writes the file
-                    bos.flush();
-                    bos.close();//closes the output file
-                    connectionSocket.close();//closes the connection
-                    System.out.println("\nFile received successfully and saved as " + fileOutput);
-                    return;//leaves the loop and closes the server
+                    if (isByteArrayEqual(originalFile, originalFileDecripted)) {
+                        bos.write(originalFile);//writes the file//writes the file
+                        bos.flush();
+                        bos.close();//closes the output file
+                        connectionSocket.close();//closes the connection
+                        System.out.println("\nFile received successfully and saved as " + fileOutput);
+                        return;//leaves the loop and closes the server
+                    } else {
+                        bos.flush();
+                        bos.close();//closes the output file
+                        connectionSocket.close();//closes the connection
+                        System.out.println("\nFailure on integrity verification, output not created ");
+                        return;//leaves the loop and closes the server
+
+                    }
                 } catch (IOException ex) {
                     System.out.println("Error in writing the file");
                 }
@@ -253,7 +257,20 @@ public class TCPServer {
         this.clientN = clientN;
     }
 
-    public void setKeys() {
+    public void preSetKeys() {
+        System.out.println("\n-- Server Mode --\n");
+        this.myPrivateKey = 19;
+        this.myPublicKey = 479;
+        this.myN = 781;
+
+        System.out.println("Pre-Set RSA Key Pairs");
+        System.out.println("Public: (" + myN + " " + myPublicKey + ")");
+        System.out.println("Private: (" + myN + " " + myPrivateKey + ")\n");
+
+    }
+
+    public void askForKeys() {
+        System.out.println("\n-- Server Mode --\n");
         Scanner reader = new Scanner(System.in);
         System.out.println("Enter the N: ");
         this.myN = reader.nextInt();
@@ -261,7 +278,9 @@ public class TCPServer {
         this.myPublicKey = reader.nextInt();
         System.out.println("Enter the PrivateKey: ");
         this.myPrivateKey = reader.nextInt();
-        System.out.println("");
+        System.out.println("\nSelected Key Pairs");
+        System.out.println("Public: (" + myN + " " + myPublicKey + ")");
+        System.out.println("Private: (" + myN + " " + myPrivateKey + ")\n");
 
     }
 
