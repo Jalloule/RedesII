@@ -59,6 +59,7 @@ public class TCPServer {
 //Calls the send to file function
 //------------------------------------------------------------------------------     
             receiveFile(fileOutput, connectionSocket);
+            return;
 //------------------------------------------------------------------------------        
         }
     }
